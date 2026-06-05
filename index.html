@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI 응원 포토카드 만들기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Gmarket+Sans:wght@500;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F4FF;
+  --surface:#FFFFFF;
+  --border:#E8E2F5;
+  --text:#2E2645;
+  --text-sub:#7A6E96;
+  --text-hint:#B8B0D0;
+  --purple:#7C6FCD;
+  --purple-light:#EDE9FF;
+  --purple-dark:#5A4FA8;
+  --pink:#E8809A;
+  --pink-light:#FDEEF3;
+  --mint:#5BB8A0;
+  --mint-light:#E8F7F3;
+  --yellow-light:#FEF8E8;
+  --peach:#F0956A;
+  --peach-light:#FEF0E8;
+  --sky:#7AB8E8;
+  --sky-light:#EAF4FD;
+  --teal:#4EAAA0;
+  --teal-light:#E4F5F3;
+  --r:16px;
+  --r-sm:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+header{background:linear-gradient(135deg,#C5B8FF 0%,#F9C5D5 50%,#FFE5B4 100%);padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='2' fill='rgba(255,255,255,0.22)'/%3E%3C/svg%3E") repeat;pointer-events:none}
+header h1{font-family:'Gmarket Sans',sans-serif;font-size:clamp(20px,5vw,34px);font-weight:700;color:#3D2E7A;position:relative;z-index:1;letter-spacing:-0.3px;line-height:1.3}
+header p{color:rgba(80,60,140,0.6);font-size:14px;margin-top:6px;position:relative;z-index:1}
+
+.step-nav{display:flex;align-items:center;justify-content:center;padding:28px 16px 0;max-width:560px;margin:0 auto}
+.sn-item{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;position:relative;cursor:pointer}
+.sn-item::after{content:'';position:absolute;top:13px;left:50%;width:100%;height:1.5px;background:var(--border);z-index:0;transition:background .3s}
+.sn-item:last-child::after{display:none}
+.sn-item.done::after{background:var(--purple-light)}
+.sn-circle{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--surface);border:1.5px solid var(--border);color:var(--text-hint);position:relative;z-index:1;transition:all .25s}
+.sn-label{font-size:10px;color:var(--text-hint);font-weight:500;white-space:nowrap;transition:color .25s}
+.sn-item.active .sn-circle{background:var(--purple);border-color:var(--purple);color:#fff;box-shadow:0 0 0 4px var(--purple-light)}
+.sn-item.active .sn-label{color:var(--purple);font-weight:700}
+.sn-item.done .sn-circle{background:var(--mint);border-color:var(--mint);color:#fff}
+.sn-item.done .sn-label{color:var(--mint)}
+
+main{max-width:580px;margin:0 auto;padding:28px 16px 80px}
+.section{display:none;animation:up .3s ease}
+.section.active{display:block}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:24px 20px;margin-bottom:14px;box-shadow:0 2px 16px rgba(124,111,205,0.07)}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--purple);background:var(--purple-light);padding:4px 10px;border-radius:100px;margin-bottom:12px}
+.sec-title{font-family:'Gmarket Sans',sans-serif;font-size:clamp(17px,4vw,22px);font-weight:700;color:var(--text);line-height:1.35;margin-bottom:6px}
+.sec-desc{font-size:13.5px;color:var(--text-sub);line-height:1.7;margin-bottom:22px}
+
+.name-input{width:100%;padding:14px 16px;font-family:'Noto Sans KR',sans-serif;font-size:17px;font-weight:700;border:1.5px solid var(--border);border-radius:var(--r-sm);background:#FAFAFE;color:var(--text);outline:none;transition:all .2s}
+.name-input:focus{border-color:var(--purple);background:#fff;box-shadow:0 0 0 3px var(--purple-light)}
+.name-input::placeholder{color:var(--text-hint);font-weight:400;font-size:14px}
+
+.set-tabs{display:flex;gap:8px;margin-bottom:18px}
+.set-tab{flex:1;padding:9px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:transparent;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;color:var(--text-sub);cursor:pointer;transition:all .2s}
+.set-tab.active{border-color:var(--purple);background:var(--purple-light);color:var(--purple-dark)}
+
+.phrase-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:400px){.phrase-grid{grid-template-columns:repeat(4,1fr)}}
+.phrase-btn{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 6px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--surface);cursor:pointer;transition:all .2s}
+.phrase-btn .ph-em{font-size:30px;line-height:1}
+.phrase-btn .ph-txt{font-size:12px;font-weight:700;color:var(--text-sub);text-align:center;line-height:1.3}
+.phrase-btn:hover{border-color:var(--purple);transform:translateY(-2px);box-shadow:0 4px 12px rgba(124,111,205,0.15)}
+.phrase-btn.selected{border-color:var(--purple);background:var(--purple-light)}
+.phrase-btn.selected .ph-txt{color:var(--purple-dark)}
+.phrase-btn .chk{position:absolute;top:5px;right:5px;width:17px;height:17px;border-radius:50%;background:var(--purple);display:none;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700}
+.phrase-btn.selected .chk{display:flex}
+.count-hint{font-size:12px;color:var(--text-hint);text-align:center;margin-top:10px}
+
+.prompt-reveal{margin-top:20px;border-top:1.5px dashed var(--border);padding-top:20px}
+.reveal-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border-radius:100px;margin-bottom:14px}
+.reveal-tag-green{color:var(--mint);background:var(--mint-light)}
+.reveal-tag-pink{color:var(--pink);background:var(--pink-light)}
+.reveal-tag-peach{color:var(--peach);background:var(--peach-light)}
+
+.prompt-block{background:linear-gradient(135deg,var(--purple-light) 0%,#FFF 65%);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:16px;margin-bottom:10px}
+.prompt-block-pink{background:linear-gradient(135deg,var(--pink-light) 0%,#FFF 65%)}
+.prompt-block-peach{background:linear-gradient(135deg,var(--peach-light) 0%,#FFF 65%)}
+.prompt-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-hint);margin-bottom:8px}
+.prompt-text{font-family:'Noto Sans KR',sans-serif;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-word}
+
+.site-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-hint);margin:16px 0 10px}
+.site-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.site-btn{display:flex;align-items:center;gap:8px;padding:13px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);text-decoration:none;color:var(--text);font-size:13px;font-weight:500;transition:all .2s}
+.site-btn:hover{border-color:var(--purple);background:var(--purple-light)}
+.site-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;white-space:nowrap}
+.badge-purple{background:var(--purple-light);color:var(--purple-dark)}
+.badge-mint{background:var(--mint-light);color:#2E7A68}
+.badge-pink{background:var(--pink-light);color:#a05070}
+.badge-sky{background:var(--sky-light);color:#2E5A8A}
+
+.style-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.style-btn{display:flex;flex-direction:column;align-items:center;gap:7px;padding:18px 10px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--surface);cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif;text-align:center}
+.style-btn .st-em{font-size:32px;line-height:1}
+.style-btn .st-nm{font-size:13px;font-weight:700;color:var(--text)}
+.style-btn .st-sb{font-size:11px;color:var(--text-hint);line-height:1.4}
+.style-btn:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 4px 12px rgba(78,170,160,0.15)}
+.style-btn.selected{border-color:var(--teal);background:var(--teal-light)}
+.style-btn.selected .st-nm{color:var(--teal)}
+.style-btn.selected .st-sb{color:rgba(78,170,160,0.8)}
+.style-chk{width:0;height:0;overflow:hidden;position:absolute}
+.style-btn.selected .style-chk{display:none}
+
+.style-confirm{margin-top:16px;padding:14px;background:var(--teal-light);border:1.5px solid #A0D8D4;border-radius:var(--r-sm);font-size:13px;color:#2E7A68;font-weight:500;display:none}
+
+.mood-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:460px){.mood-grid{grid-template-columns:repeat(3,1fr)}}
+.mood-btn{display:flex;flex-direction:column;align-items:center;gap:7px;padding:16px 10px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--surface);cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif}
+.mood-btn .md-em{font-size:26px}
+.mood-btn .md-nm{font-size:13px;font-weight:700;color:var(--text)}
+.mood-btn .md-sb{font-size:11px;color:var(--text-hint)}
+.mood-btn:hover{border-color:var(--pink);transform:translateY(-2px);box-shadow:0 4px 12px rgba(232,128,154,0.15)}
+.mood-btn.selected{border-color:var(--pink);background:var(--pink-light)}
+.mood-btn.selected .md-nm{color:var(--pink)}
+.mood-btn.selected .md-sb{color:rgba(232,128,154,0.7)}
+
+.anim-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.anim-btn{display:flex;flex-direction:column;align-items:center;gap:7px;padding:16px 10px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--surface);cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif}
+.anim-btn .an-em{font-size:28px}
+.anim-btn .an-nm{font-size:13px;font-weight:700;color:var(--text)}
+.anim-btn .an-sb{font-size:11px;color:var(--text-hint)}
+.anim-btn:hover{border-color:var(--peach);transform:translateY(-2px);box-shadow:0 4px 12px rgba(240,149,106,0.15)}
+.anim-btn.selected{border-color:var(--peach);background:var(--peach-light)}
+.anim-btn.selected .an-nm{color:var(--peach)}
+.anim-btn.selected .an-sb{color:rgba(240,149,106,0.7)}
+
+.copy-btn{width:100%;margin-top:8px;padding:10px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--surface);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;color:var(--text-sub);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.copy-btn:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-light)}
+.copy-btn.ok{border-color:var(--mint);color:var(--mint);background:var(--mint-light)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:13px 22px;border-radius:var(--r-sm);font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .2s;text-decoration:none;white-space:nowrap}
+.btn-purple{background:var(--purple);color:#fff;box-shadow:0 3px 12px rgba(124,111,205,0.3)}
+.btn-purple:hover{background:var(--purple-dark)}
+.btn-purple:disabled{opacity:0.35;cursor:not-allowed;box-shadow:none}
+.btn-ghost{background:transparent;color:var(--text-sub);border:1.5px solid var(--border)}
+.btn-ghost:hover{border-color:var(--purple-dark);color:var(--purple-dark)}
+.btn-wide{width:100%}
+.btn-row{display:flex;gap:10px;margin-top:20px}
+.btn-row .btn{flex:1}
+
+.finish-banner{background:linear-gradient(135deg,#D8D0FF,#FFD6E8,#FFE8B4);border-radius:var(--r);padding:28px 20px;text-align:center;margin-bottom:14px}
+.finish-banner h2{font-family:'Gmarket Sans',sans-serif;font-size:22px;font-weight:700;color:#3D2E7A;margin-bottom:4px}
+.finish-banner p{font-size:13px;color:rgba(80,60,140,0.65)}
+
+.info-tip{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--yellow-light);border:1.5px solid #F5DFA0;border-radius:var(--r-sm);margin-bottom:18px;font-size:13px;color:#7A5A10;line-height:1.6}
+.info-tip .ti{font-size:18px;flex-shrink:0}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#2E2645;color:#fff;padding:11px 22px;border-radius:100px;font-size:13px;font-weight:500;z-index:9999;transition:transform .3s ease;white-space:nowrap;pointer-events:none;box-shadow:0 4px 20px rgba(46,38,69,0.25)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✨ AI 응원 포토카드 만들기</h1>
+  <p>AI와 함께 나만의 이모티콘·응원송·애니메이션을 만들어요</p>
+</header>
+
+<div class="step-nav" id="stepNav">
+  <div class="sn-item active" data-s="1"><div class="sn-circle">1</div><span class="sn-label">이름</span></div>
+  <div class="sn-item" data-s="2"><div class="sn-circle">2</div><span class="sn-label">문구</span></div>
+  <div class="sn-item" data-s="3"><div class="sn-circle">3</div><span class="sn-label">스타일</span></div>
+  <div class="sn-item" data-s="4"><div class="sn-circle">4</div><span class="sn-label">응원송</span></div>
+  <div class="sn-item" data-s="5"><div class="sn-circle">5</div><span class="sn-label">애니메이션</span></div>
+  <div class="sn-item" data-s="6"><div class="sn-circle">6</div><span class="sn-label">완성</span></div>
+</div>
+
+<main>
+
+<!-- ===== STEP 1: 이름 ===== -->
+<section class="section active" id="step1">
+  <div class="card">
+    <div class="eyebrow">STEP 01</div>
+    <h2 class="sec-title">이름을 입력해요 👤</h2>
+    <p class="sec-desc">응원받을 사람의 이름을 입력하면<br>나만을 위한 특별한 응원 콘텐츠가 만들어져요!</p>
+    <input type="text" class="name-input" id="nameInput" placeholder="예) 민수, 소라, 지훈, 하늘..." maxlength="10" oninput="onName()"/>
+    <div class="btn-row">
+      <button class="btn btn-purple btn-wide" id="s1next" onclick="go(2)" disabled>다음 단계로 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 2: 응원 문구 ===== -->
+<section class="section" id="step2">
+  <div class="card">
+    <div class="eyebrow">STEP 02</div>
+    <h2 class="sec-title">응원 문구를 골라요 💬</h2>
+    <p class="sec-desc">원하는 응원 문구를 선택하세요. 여러 개 고를 수 있어요!</p>
+    <div class="set-tabs">
+      <button class="set-tab active" onclick="swSet(0)">🌈 세트 A</button>
+      <button class="set-tab" onclick="swSet(1)">⭐ 세트 B</button>
+    </div>
+    <div id="setA">
+      <div class="phrase-grid">
+        <button class="phrase-btn" data-p="파이팅!" onclick="togP(this)"><span class="ph-em">💪</span><span class="ph-txt">파이팅!</span><span class="chk">✓</span></button>
+        <button class="phrase-btn" data-p="최고예요!" onclick="togP(this)"><span class="ph-em">🌟</span><span class="ph-txt">최고예요!</span><span class="chk">✓</span></button>
+        <button class="phrase-btn" data-p="잘하고 있어요!" onclick="togP(this)"><span class="ph-em">👍</span><span class="ph-txt">잘하고 있어요!</span><span class="chk">✓</span></button>
+        <button class="phrase-btn" data-p="사랑해요!" onclick="togP(this)"><span class="ph-em">❤️</span><span class="ph-txt">사랑해요!</span><span class="chk">✓</span></button>
+      </div>
+    </div>
+    <div id="setB" style="display:none">
+      <div class="phrase-grid">
+        <button class="phrase-btn" data-p="멋져요!" onclick="togP(this)"><span class="ph-em">😎</span><span class="ph-txt">멋져요!</span><span class="chk">✓</span></button>
+        <button class="phrase-btn" data-p="고마워요!" onclick="togP(this)"><span class="ph-em">🙏</span><span class="ph-txt">고마워요!</span><span class="chk">✓</span></button>
+        <button class="phrase-btn" data-p="응원할게요!" onclick="togP(this)"><span class="ph-em">📣</span><span class="ph-txt">응원할게요!</span><span class="chk">✓</span></button>
+        <button class="phrase-btn" data-p="자신 있어요!" onclick="togP(this)"><span class="ph-em">🦁</span><span class="ph-txt">자신 있어요!</span><span class="chk">✓</span></button>
+      </div>
+    </div>
+    <p class="count-hint" id="pCount">선택된 문구: 0개</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go(1)">← 이전</button>
+      <button class="btn btn-purple" id="s2next" onclick="go(3)" disabled>다음: 스타일 선택 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 3: 이모티콘 스타일 ===== -->
+<section class="section" id="step3">
+  <div class="card">
+    <div class="eyebrow">STEP 03</div>
+    <h2 class="sec-title">이모티콘 스타일을 골라요 🎨</h2>
+    <p class="sec-desc">어떤 느낌의 이모티콘을 만들고 싶나요?<br>스타일을 고르면 AI 이모티콘 프롬프트가 바로 완성돼요!</p>
+    <div class="style-grid">
+      <button class="style-btn" data-style="카와이" data-sdesc="둥글둥글하고 큰 눈, 작은 입, 볼 터치, 파스텔 색감의 귀엽고 사랑스러운 카와이(kawaii) 스타일" onclick="selStyle(this)">
+        <span class="st-em">😊</span>
+        <span class="st-nm">카와이 스타일</span>
+        <span class="st-sb">둥글둥글 귀여운 표정</span>
+      </button>
+      <button class="style-btn" data-style="병맛" data-sdesc="엉뚱하고 황당한 표정, 과장된 눈, 예상치 못한 유머 요소, 웃긴 포즈가 가득한 병맛 개그 스타일" onclick="selStyle(this)">
+        <span class="st-em">🤣</span>
+        <span class="st-nm">병맛 스타일</span>
+        <span class="st-sb">엉뚱하고 웃긴 표정</span>
+      </button>
+      <button class="style-btn" data-style="짤방" data-sdesc="인터넷 밈 느낌, 극도로 과장된 리액션, 드라마틱한 표정 변화, 임팩트 있는 짤방 스타일" onclick="selStyle(this)">
+        <span class="st-em">😆</span>
+        <span class="st-nm">짤방 스타일</span>
+        <span class="st-sb">과장된 리액션과 밈 느낌</span>
+      </button>
+      <button class="style-btn" data-style="캐릭터" data-sdesc="귀여운 동물 또는 판타지 캐릭터 느낌, 부드러운 색감, 아기자기하고 동글동글한 캐릭터 디자인 스타일" onclick="selStyle(this)">
+        <span class="st-em">🐰</span>
+        <span class="st-nm">캐릭터 스타일</span>
+        <span class="st-sb">귀여운 캐릭터 느낌</span>
+      </button>
+    </div>
+
+    <div class="style-confirm" id="styleConfirm">
+      ✅ <strong id="styleConfirmText"></strong> 스타일이 선택되었어요! 아래 프롬프트를 복사하세요.
+    </div>
+
+    <!-- 이모티콘 프롬프트: 스타일 선택 시 표시 -->
+    <div class="prompt-reveal" id="emojiReveal" style="display:none">
+      <span class="reveal-tag reveal-tag-green">✅ 이모티콘 프롬프트 완성!</span>
+      <div class="prompt-block">
+        <div class="prompt-label">AI 이모티콘 생성 프롬프트</div>
+        <div class="prompt-text" id="emojiPrompt"></div>
+        <button class="copy-btn" onclick="cp('emojiPrompt',this)">📋 프롬프트 복사하기</button>
+      </div>
+      <div class="site-title">🎨 이모티콘 만들기 사이트</div>
+      <div class="site-grid">
+        <a class="site-btn" href="https://gemini.google.com" target="_blank">✨ Google 제미나이<span class="site-badge badge-purple">추천</span></a>
+        <a class="site-btn" href="https://chat.openai.com" target="_blank">💬 ChatGPT<span class="site-badge badge-mint">추천</span></a>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go(2)">← 이전</button>
+      <button class="btn btn-purple" id="s3next" onclick="go(4)" disabled>다음: 응원송 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 4: 응원송 ===== -->
+<section class="section" id="step4">
+  <div class="card">
+    <div class="eyebrow">STEP 04</div>
+    <h2 class="sec-title">응원송 분위기를 골라요 🎵</h2>
+    <p class="sec-desc">어떤 느낌의 응원송을 원하나요?</p>
+    <div class="mood-grid">
+      <button class="mood-btn" data-m="신나는 응원송" onclick="selM(this)"><span class="md-em">🎉</span><span class="md-nm">신나는 응원송</span><span class="md-sb">활기차고 신남</span></button>
+      <button class="mood-btn" data-m="밝은 동요" onclick="selM(this)"><span class="md-em">🌈</span><span class="md-nm">밝은 동요</span><span class="md-sb">귀엽고 따뜻함</span></button>
+      <button class="mood-btn" data-m="희망찬 팝송" onclick="selM(this)"><span class="md-em">✨</span><span class="md-nm">희망찬 팝송</span><span class="md-sb">감동적인 팝</span></button>
+      <button class="mood-btn" data-m="행복한 멜로디" onclick="selM(this)"><span class="md-em">😊</span><span class="md-nm">행복한 멜로디</span><span class="md-sb">따뜻하고 행복</span></button>
+      <button class="mood-btn" data-m="신나는 트로트" onclick="selM(this)"><span class="md-em">🎶</span><span class="md-nm">트로트</span><span class="md-sb">경쾌한 한국풍</span></button>
+    </div>
+
+    <div class="prompt-reveal" id="musicReveal" style="display:none">
+      <span class="reveal-tag reveal-tag-pink">✅ 응원송 프롬프트 완성!</span>
+      <div class="prompt-block prompt-block-pink" style="margin-top:14px">
+        <div class="prompt-label">Suno AI 스타일 프롬프트</div>
+        <div class="prompt-text" id="musicPrompt"></div>
+        <button class="copy-btn" onclick="cp('musicPrompt',this)">📋 프롬프트 복사하기</button>
+      </div>
+      <div class="prompt-block prompt-block-pink">
+        <div class="prompt-label">응원송 가사</div>
+        <div class="prompt-text" id="musicLyrics"></div>
+        <button class="copy-btn" onclick="cp('musicLyrics',this)">📋 가사 복사하기</button>
+      </div>
+      <div class="site-title">🎵 응원송 만들기 사이트</div>
+      <div class="site-grid">
+        <a class="site-btn" href="https://suno.com" target="_blank">🎵 Suno AI<span class="site-badge badge-purple">추천</span></a>
+        <a class="site-btn" href="https://udio.com" target="_blank">🎶 Udio<span class="site-badge badge-mint">무료</span></a>
+        <a class="site-btn" href="https://www.musicfy.club" target="_blank">🎼 Musicfy<span class="site-badge badge-pink">간편</span></a>
+        <a class="site-btn" href="https://soundraw.io" target="_blank">🔊 Soundraw<span class="site-badge badge-sky">배경음악</span></a>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go(3)">← 이전</button>
+      <button class="btn btn-purple" id="s4next" onclick="go(5)" disabled>다음: 애니메이션 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 5: 애니메이션 ===== -->
+<section class="section" id="step5">
+  <div class="card">
+    <div class="eyebrow">STEP 05</div>
+    <h2 class="sec-title">이모티콘을 움직이게 해요 🎬</h2>
+    <p class="sec-desc">만든 이모티콘에 어떤 움직임을 넣고 싶나요?</p>
+    <div class="info-tip">
+      <span class="ti">💡</span>
+      <span>앞에서 만든 AI 이모티콘을 저장한 후, 아래 프롬프트를 복사해서 애니메이션 AI 사이트에 이미지와 함께 붙여넣으세요!</span>
+    </div>
+    <div class="anim-grid">
+      <button class="anim-btn" data-a="손을 흔들며 인사하는" onclick="selA(this)"><span class="an-em">👋</span><span class="an-nm">손 흔들기</span><span class="an-sb">인사하는 동작</span></button>
+      <button class="anim-btn" data-a="신나게 점프하며 응원하는" onclick="selA(this)"><span class="an-em">🤸</span><span class="an-nm">점프 응원</span><span class="an-sb">신나는 점프</span></button>
+      <button class="anim-btn" data-a="하트를 날리며 사랑을 표현하는" onclick="selA(this)"><span class="an-em">💝</span><span class="an-nm">하트 날리기</span><span class="an-sb">사랑 표현</span></button>
+      <button class="anim-btn" data-a="빙글빙글 춤을 추는" onclick="selA(this)"><span class="an-em">💃</span><span class="an-nm">춤추기</span><span class="an-sb">신나는 댄스</span></button>
+      <button class="anim-btn" data-a="반짝이며 빛나는" onclick="selA(this)"><span class="an-em">✨</span><span class="an-nm">반짝이기</span><span class="an-sb">빛나는 효과</span></button>
+      <button class="anim-btn" data-a="응원 막대를 신나게 흔드는" onclick="selA(this)"><span class="an-em">🎊</span><span class="an-nm">응원 흔들기</span><span class="an-sb">응원봉 동작</span></button>
+    </div>
+
+    <div id="animReveal" style="display:none;border-top:1.5px dashed var(--border);padding-top:20px;margin-top:4px">
+      <span class="reveal-tag reveal-tag-peach">✅ 애니메이션 프롬프트 완성!</span>
+      <div class="prompt-block prompt-block-peach" style="margin-top:14px">
+        <div class="prompt-label">애니메이션 생성 프롬프트</div>
+        <div class="prompt-text" id="animPrompt"></div>
+        <button class="copy-btn" onclick="cp('animPrompt',this)">📋 프롬프트 복사하기</button>
+      </div>
+      <div class="site-title">🎬 애니메이션 만들기 사이트</div>
+      <div class="site-grid">
+        <a class="site-btn" href="https://runwayml.com" target="_blank">🚀 Runway ML<span class="site-badge badge-purple">추천</span></a>
+        <a class="site-btn" href="https://pika.art" target="_blank">⚡ Pika Art<span class="site-badge badge-pink">이미지→영상</span></a>
+        <a class="site-btn" href="https://klingai.com" target="_blank">🎬 Kling AI<span class="site-badge badge-mint">고품질</span></a>
+        <a class="site-btn" href="https://viggle.ai" target="_blank">💃 Viggle AI<span class="site-badge badge-sky">댄스 특화</span></a>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go(4)">← 이전</button>
+      <button class="btn btn-purple" id="s5next" onclick="go(6)" disabled>완성 보기 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 6: 완성 ===== -->
+<section class="section" id="step6">
+  <div class="finish-banner">
+    <div style="font-size:48px;margin-bottom:8px">🎊</div>
+    <h2 id="finTitle">완성됐어요!</h2>
+    <p>모든 프롬프트가 준비되었어요. 각 사이트에서 만들어보세요!</p>
+  </div>
+
+  <div class="card">
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--purple);margin-bottom:14px">📋 전체 요약</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:12px;padding:11px 14px;background:var(--bg);border-radius:var(--r-sm);font-size:14px;align-items:center"><span style="color:var(--text-hint);min-width:70px;font-size:12px;font-weight:700">👤 이름</span><span style="font-weight:700;color:var(--text)" id="fin-name">—</span></div>
+      <div style="display:flex;gap:12px;padding:11px 14px;background:var(--bg);border-radius:var(--r-sm);font-size:14px;align-items:flex-start"><span style="color:var(--text-hint);min-width:70px;font-size:12px;font-weight:700">💬 문구</span><span style="font-weight:700;color:var(--text)" id="fin-phrases">—</span></div>
+      <div style="display:flex;gap:12px;padding:11px 14px;background:var(--bg);border-radius:var(--r-sm);font-size:14px;align-items:center"><span style="color:var(--text-hint);min-width:70px;font-size:12px;font-weight:700">🎨 스타일</span><span style="font-weight:700;color:var(--text)" id="fin-style">—</span></div>
+      <div style="display:flex;gap:12px;padding:11px 14px;background:var(--bg);border-radius:var(--r-sm);font-size:14px;align-items:center"><span style="color:var(--text-hint);min-width:70px;font-size:12px;font-weight:700">🎵 음악</span><span style="font-weight:700;color:var(--text)" id="fin-mood">—</span></div>
+      <div style="display:flex;gap:12px;padding:11px 14px;background:var(--bg);border-radius:var(--r-sm);font-size:14px;align-items:center"><span style="color:var(--text-hint);min-width:70px;font-size:12px;font-weight:700">🎬 동작</span><span style="font-weight:700;color:var(--text)" id="fin-anim">—</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:14px">🎯 순서대로 만들어봐요!</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:12px;padding:13px;background:var(--purple-light);border-radius:var(--r-sm)">
+        <span style="width:26px;height:26px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">1</span>
+        <span style="font-size:13px;font-weight:500;color:var(--purple-dark)">이모티콘 프롬프트 복사 → 제미나이 / ChatGPT에서 이미지 생성</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:13px;background:var(--pink-light);border-radius:var(--r-sm)">
+        <span style="width:26px;height:26px;border-radius:50%;background:var(--pink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">2</span>
+        <span style="font-size:13px;font-weight:500;color:#a05070">응원송 프롬프트 복사 → Suno AI에서 음악 생성</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:13px;background:var(--peach-light);border-radius:var(--r-sm)">
+        <span style="width:26px;height:26px;border-radius:50%;background:var(--peach);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">3</span>
+        <span style="font-size:13px;font-weight:500;color:#a05030">애니메이션 프롬프트 복사 → Runway / Pika에서 움직이는 이모티콘 생성</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="go(5)">← 이전</button>
+    <button class="btn btn-purple" onclick="restart()">🔄 처음부터 다시</button>
+  </div>
+</section>
+
+</main>
+<div class="toast" id="toast">복사되었어요! 🎉</div>
+
+<script>
+let st={name:'',phrases:[],style:'',sdesc:'',mood:'',anim:''};
+
+function onName(){
+  st.name=document.getElementById('nameInput').value.trim();
+  document.getElementById('s1next').disabled=!st.name;
+}
+
+function swSet(i){
+  document.getElementById('setA').style.display=i===0?'':'none';
+  document.getElementById('setB').style.display=i===1?'':'none';
+  document.querySelectorAll('.set-tab').forEach((t,j)=>t.classList.toggle('active',j===i));
+}
+
+function togP(btn){
+  const p=btn.dataset.p;
+  btn.classList.toggle('selected');
+  if(btn.classList.contains('selected')){if(!st.phrases.includes(p))st.phrases.push(p);}
+  else st.phrases=st.phrases.filter(x=>x!==p);
+  document.getElementById('pCount').textContent=`선택된 문구: ${st.phrases.length}개`;
+  document.getElementById('s2next').disabled=st.phrases.length===0;
+}
+
+function selStyle(btn){
+  document.querySelectorAll('.style-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  st.style=btn.dataset.style;
+  st.sdesc=btn.dataset.sdesc;
+  document.getElementById('s3next').disabled=false;
+  document.getElementById('styleConfirm').style.display='block';
+  document.getElementById('styleConfirmText').textContent=st.style;
+  buildEmojiPrompt();
+  document.getElementById('emojiReveal').style.display='';
+}
+
+function selM(btn){
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  st.mood=btn.dataset.m;
+  document.getElementById('s4next').disabled=false;
+  buildMusicPrompt();
+  document.getElementById('musicReveal').style.display='';
+}
+
+function selA(btn){
+  document.querySelectorAll('.anim-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  st.anim=btn.dataset.a;
+  document.getElementById('s5next').disabled=false;
+  buildAnimPrompt();
+  document.getElementById('animReveal').style.display='';
+}
+
+function go(n){
+  document.querySelectorAll('.section').forEach((s,i)=>s.classList.toggle('active',i+1===n));
+  document.querySelectorAll('.sn-item').forEach(d=>{
+    const sn=parseInt(d.dataset.s);
+    d.classList.remove('active','done');
+    if(sn===n)d.classList.add('active');
+    else if(sn<n)d.classList.add('done');
+  });
+  if(n===6)buildFinish();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function buildEmojiPrompt(){
+  const n=st.name, ps=st.phrases, s=st.style, sd=st.sdesc;
+  document.getElementById('emojiPrompt').textContent=
+`${n}의 사진을 참고하여 응원 이모티콘 ${ps.length}종 세트를 만들어주세요.
+
+[스타일] ${s} 스타일
+${sd}
+
+[각 이모티콘 응원 문구]
+${ps.map((p,i)=>`${i+1}. "${p}"`).join('\n')}
+
+[제작 조건]
+- 각각 다른 포즈 (손흔들기, 점프, 하트, 엄지척 등)
+- 배경: 흰색 또는 투명
+- 스티커 형태, 고품질 출력`;
+}
+
+function buildMusicPrompt(){
+  const n=st.name, ps=st.phrases, m=st.mood;
+  const moodMap={
+    '신나는 응원송':'upbeat cheerleading pop, energetic, 120bpm',
+    '밝은 동요':'bright children song, playful, 100bpm',
+    '희망찬 팝송':'hopeful inspirational pop ballad, 90bpm',
+    '행복한 멜로디':'happy feel-good acoustic, 110bpm',
+    '신나는 트로트':'Korean trot, upbeat, traditional Korean style, 130bpm'
+  };
+  document.getElementById('musicPrompt').textContent=
+`[스타일] ${m}
+[장르] ${moodMap[m]||m}
+[언어] 한국어
+[길이] 30~60초
+[주인공] ${n}
+[핵심 메시지] ${ps.join(', ')}
+[분위기] 밝고 긍정적, 힘을 주는 느낌`;
+
+  const lMap={
+    '파이팅!':`${n}아 파이팅!\n넌 할 수 있어 파이팅!\n오늘도 내일도 파이팅!`,
+    '최고예요!':`${n}이가 최고야\n세상에서 제일 최고야\n언제나 빛나는 ${n}!`,
+    '잘하고 있어요!':`${n}아 잘하고 있어\n조금씩 나아가고 있어\n넌 정말 대단해!`,
+    '사랑해요!':`${n}아 사랑해\n오늘도 내일도 사랑해\n함께라서 행복해!`,
+    '멋져요!':`${n}이는 멋쟁이\n세상에서 제일 멋쟁이\n언제나 빛나!`,
+    '고마워요!':`${n}아 고마워\n네가 있어서 고마워\n소중한 ${n}!`,
+    '응원할게요!':`${n}아 힘내\n내가 항상 응원할게\n언제나 네 편이야!`,
+    '자신 있어요!':`${n}이는 자신만만\n뭐든지 해낼 수 있어\n앞으로 함께!`
+  };
+  const verses=ps.map(p=>lMap[p]||`${n}아, ${p}`).join('\n\n');
+  document.getElementById('musicLyrics').textContent=
+`[분위기: ${m}]
+
+[1절]
+${verses}
+
+[후렴]
+${n}아, 힘내요!
+언제나 네 편이야
+오늘도 내일도
+함께 걸어가요~
+
+[아웃트로]
+${n}, 화이팅! 🌟`;
+}
+
+function buildAnimPrompt(){
+  const n=st.name, ps=st.phrases, a=st.anim, s=st.style;
+  document.getElementById('animPrompt').textContent=
+`위에서 만든 ${n}의 ${s} 스타일 이모티콘 이미지를 업로드하고 아래 내용을 입력하세요.
+
+[애니메이션 동작] ${a} 귀여운 캐릭터
+
+[상세 설명]
+- 캐릭터가 ${a} 자연스러운 루프 애니메이션
+- 응원 문구 "${ps[0]||'파이팅!'}" 텍스트 함께 표시
+- 밝고 화사한 색감 유지
+- 배경: 파스텔 색상 또는 투명
+- 길이: 2~3초 반복 루프
+- 부드럽고 귀여운 움직임`;
+}
+
+function buildFinish(){
+  document.getElementById('finTitle').textContent=`${st.name}의 AI 응원 포토카드 완성! 🎊`;
+  document.getElementById('fin-name').textContent=st.name||'—';
+  document.getElementById('fin-phrases').textContent=st.phrases.join(', ')||'—';
+  document.getElementById('fin-style').textContent=st.style?`${st.style} 스타일`:'—';
+  document.getElementById('fin-mood').textContent=st.mood||'—';
+  document.getElementById('fin-anim').textContent=st.anim||'—';
+}
+
+function cp(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='✅ 복사 완료!';
+    btn.classList.add('ok');
+    showToast();
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('ok');},2000);
+  });
+}
+
+function showToast(){
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+function restart(){
+  st={name:'',phrases:[],style:'',sdesc:'',mood:'',anim:''};
+  document.getElementById('nameInput').value='';
+  document.getElementById('s1next').disabled=true;
+  document.querySelectorAll('.phrase-btn,.style-btn,.mood-btn,.anim-btn').forEach(b=>b.classList.remove('selected'));
+  ['s2next','s3next','s4next','s5next'].forEach(id=>document.getElementById(id).disabled=true);
+  document.getElementById('pCount').textContent='선택된 문구: 0개';
+  ['emojiReveal','musicReveal','animReveal'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('styleConfirm').style.display='none';
+  swSet(0);
+  go(1);
+}
+</script>
+</body>
+</html>
